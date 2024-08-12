@@ -8,8 +8,8 @@
 #include <vector>
 
 int main(int, char const *[]) {
-  // std::ifstream infile("./test-cases/test-seq.txt");
-  std::ifstream infile("./test-cases/example-seq.txt");
+  std::ifstream infile("./test-cases/test-seq.txt");
+  // std::ifstream infile("./test-cases/example-seq.txt");
   // std::ifstream infile("./test-cases/human-chimp-seq.txt");
 
   auto &ostrm = std::cout;

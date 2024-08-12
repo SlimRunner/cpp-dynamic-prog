@@ -61,7 +61,7 @@ void sequenceScoringNW(const Seq &seq1, const Seq &seq2, MutMatrix<Num> &scores,
   for (size_t i = 1; i < N; ++i) {
     scores(i, 0) = -i;
   }
-  for (size_t j = 1; j < N; ++j) {
+  for (size_t j = 1; j < M; ++j) {
     scores(0, j) = -j;
   }
 
@@ -106,7 +106,17 @@ std::vector<std::pair<Seq, Seq>> findAlignmentsNW(const MutMatrix<Num> &btrace,
   for (Vec2 here = stack.top(); !stack.empty();) {
     here = stack.top();
     stack.pop();
-    if (here.x == max_size_t || here.y == max_size_t) {
+    if (here.x == max_size_t) {
+      for (size_t j = 0; j <= here.y; ++j) {
+        seqs.back().first.push_front('-');
+        seqs.back().second.push_front(seq2.at(here.y - j));
+      }
+      break;
+    } else if (here.y == max_size_t) {
+      for (size_t i = 0; i <= here.x; ++i) {
+        seqs.back().first.push_front(seq1.at(here.x - i));
+        seqs.back().second.push_front('-');
+      }
       break;
     }
     auto direction = btrace(here.x, here.y);
