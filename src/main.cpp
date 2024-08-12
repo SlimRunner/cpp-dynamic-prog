@@ -1,23 +1,43 @@
+#include "Algorithms.hpp"
 #include "MutMatrix.hpp"
 #include <array>
-#include <vector>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <string>
+#include <vector>
 
 int main(int, char const *[]) {
-  std::vector<std::vector<int>> arr = {{1,2,3},{1,2,6}};
+  // std::ifstream infile("./test-cases/test-seq.txt");
+  // std::ifstream infile("./test-cases/example-seq.txt");
+  std::ifstream infile("./test-cases/human-chimp-seq.txt");
 
-  alg::MutMatrix<int>mtx(arr.cbegin(), arr.cend());
-  // const alg::MutMatrix<int>mtx(5, 7);
-  std::cout << "(" << mtx.rowSize() << ", " << mtx.colSize() << ")";
-  std::cout << std::endl;
-  mtx(0,0) = 47;
+  std::string s1;
+  std::string s2;
+  std::getline(infile, s1);
+  std::getline(infile, s2);
 
-  for (size_t i = 0, sz = mtx.rowSize(); i < sz; ++i) {
-    for (auto && e : mtx.viewRow(i)) {
-      std::cout << e << " ";
+  alg::MutMatrix<int> scores(s1.size() + 1, s2.size() + 1);
+  alg::MutMatrix<int> btrace(s1.size(), s2.size());
+  auto matchPen = [](char a, char b) { return (a == b ? 2 : -2); };
+  auto gapPen = []() { return -1; };
+
+  alg::sequenceScoringNW<std::string, char, int>(s1, s2, scores, btrace,
+                                                 matchPen, gapPen);
+  if (scores.size() < 600) {
+    for (auto const &mtx : {scores, btrace}) {
+      for (size_t i = 0, sz = mtx.rowSize(); i < sz; ++i) {
+        for (auto const &val : mtx.viewRow(i)) {
+          std::cout << std::setw(3) << val << " ";
+        }
+        std::cout << std::endl;
+      }
+      std::cout << std::endl;
     }
-    std::cout << std::endl;
   }
-  std::cout << std::endl;
+
+  auto seqVector = alg::findAlignmentsNW<std::string, char, int>(btrace, s1, s2);
+  std::cout << seqVector.at(0).first << std::endl;
+  std::cout << seqVector.at(0).second << std::endl;
   return 0;
 }
