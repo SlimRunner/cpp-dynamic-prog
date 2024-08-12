@@ -19,7 +19,7 @@ ifeq ($(detected_OS),Linux)
 endif
 
 CXX         := g++
-CXXVERSION  := -std=c++20
+CXXVERSION  := -std=c++17
 CXXSTRICT   := -pedantic-errors -Werror
 CXXWARN     := -Wall -Wextra -Wshadow -Wsign-conversion
 CXXFLAGS    := $(CXXVERSION) $(CXXWARN) $(CXXSTRICT) -Wfatal-errors
