@@ -5,13 +5,13 @@
 #include "MutMatrix.hpp"
 
 #include <algorithm> // max
+#include <cassert>   // pair
 #include <cstddef>   // size_t
 #include <deque>
 #include <functional> // functional
 #include <limits>     // numeric_limits
 #include <stack>
 #include <utility> // pair
-#include <cassert> // pair
 
 namespace alg {
 

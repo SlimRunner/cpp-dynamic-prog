@@ -62,7 +62,10 @@ public:
   /* OPERATORS */
 
   T &operator()(size_t row, size_t col) { return mData.at(col + row * mCols); }
-  T operator()(size_t row, size_t col) const { return mData.at(col + row * mCols); }
+
+  T operator()(size_t row, size_t col) const {
+    return mData.at(col + row * mCols);
+  }
 
   /* ITERATION */
 
@@ -87,10 +90,8 @@ public:
   }
 
   /* PROPERTIES */
-  
-  size_t size() const {
-    return mData.size();
-  }
+
+  size_t size() const { return mData.size(); }
 
   std::pair<size_t, size_t> sizePair() const {
     size_t r = mData.size();
