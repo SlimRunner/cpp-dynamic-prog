@@ -9,8 +9,10 @@
 
 int main(int, char const *[]) {
   // std::ifstream infile("./test-cases/test-seq.txt");
-  // std::ifstream infile("./test-cases/example-seq.txt");
-  std::ifstream infile("./test-cases/human-chimp-seq.txt");
+  std::ifstream infile("./test-cases/example-seq.txt");
+  // std::ifstream infile("./test-cases/human-chimp-seq.txt");
+
+  auto &ostrm = std::cout;
 
   std::string s1;
   std::string s2;
@@ -24,20 +26,24 @@ int main(int, char const *[]) {
 
   alg::sequenceScoringNW<std::string, char, int>(s1, s2, scores, btrace,
                                                  matchPen, gapPen);
+
   if (scores.size() < 600) {
     for (auto const &mtx : {scores, btrace}) {
       for (size_t i = 0, sz = mtx.rowSize(); i < sz; ++i) {
         for (auto const &val : mtx.viewRow(i)) {
-          std::cout << std::setw(3) << val << " ";
+          ostrm << std::setw(3) << val << " ";
         }
-        std::cout << std::endl;
+        ostrm << std::endl;
       }
-      std::cout << std::endl;
+      ostrm << std::endl;
     }
   }
 
-  auto seqVector = alg::findAlignmentsNW<std::string, char, int>(btrace, s1, s2);
-  std::cout << seqVector.at(0).first << std::endl;
-  std::cout << seqVector.at(0).second << std::endl;
+  auto seqVector =
+      alg::findAlignmentsNW<std::string, char, int>(btrace, s1, s2);
+  ostrm << seqVector.at(0).first << std::endl;
+  ostrm << seqVector.at(0).second << std::endl;
+
+  ostrm << "\nbest score: " << scores(s1.size(), s2.size());
   return 0;
 }
