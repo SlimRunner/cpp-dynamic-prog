@@ -1,5 +1,18 @@
 #pragma once
 
+#include "EnumUtils.hpp"
+#include "Iterators.hpp"
+#include "MutMatrix.hpp"
+
+#include <algorithm> // max
+#include <cstddef>   // size_t
+#include <deque>
+#include <functional> // functional
+#include <limits>     // numeric_limits
+#include <stack>
+#include <utility> // pair
+#include <cassert> // pair
+
 namespace alg {
 
 enum class Dir8 {
@@ -68,6 +81,60 @@ void sequenceScoringNW(const Seq &seq1, const Seq &seq2, MutMatrix<Num> &scores,
           static_cast<Num>(diag == maxScore ? Dir8::NORTH_WEST : Dir8::NONE);
     }
   }
+}
+
+template <class Seq, class Elem, class Num>
+std::vector<std::pair<Seq, Seq>> findAlignmentsNW(const MutMatrix<Num> &btrace,
+                                                  const Seq &seq1,
+                                                  const Seq &seq2) {
+  static_assert(
+      std::is_same<decltype(std::declval<Seq>().at(0)), Elem &>::value ||
+          std::is_same<decltype(std::declval<Seq>().at(0)),
+                       const Elem &>::value,
+      "Container Seq must support 'at()' method returning Elem or const Elem "
+      "reference");
+  constexpr const auto max_size_t = std::numeric_limits<size_t>::max();
+  struct Vec2 {
+    size_t x;
+    size_t y;
+  };
+  std::stack<Vec2> stack;
+  stack.push({btrace.rowSize() - 1, btrace.colSize() - 1});
+  std::vector<std::pair<std::deque<Elem>, std::deque<Elem>>> seqs;
+  seqs.push_back({std::deque<Elem>{}, std::deque<Elem>{}});
+
+  for (Vec2 here = stack.top(); !stack.empty();) {
+    here = stack.top();
+    stack.pop();
+    if (here.x == max_size_t || here.y == max_size_t) {
+      break;
+    }
+    auto direction = btrace(here.x, here.y);
+    if ((here.x == 0 && here.x == here.y)) {
+      seqs.back().first.push_front(seq1.at(here.x));
+      seqs.back().second.push_front(seq2.at(here.y));
+    } else if (direction & static_cast<int>(Dir8::WEST)) {
+      stack.push({here.x, here.y - 1});
+      seqs.back().first.push_front('-');
+      seqs.back().second.push_front(seq2.at(here.y));
+    } else if (direction & static_cast<int>(Dir8::NORTH)) {
+      stack.push({here.x - 1, here.y});
+      seqs.back().first.push_front(seq1.at(here.x));
+      seqs.back().second.push_front('-');
+    } else if (direction & static_cast<int>(Dir8::NORTH_WEST)) {
+      stack.push({here.x - 1, here.y - 1});
+      seqs.back().first.push_front(seq1.at(here.x));
+      seqs.back().second.push_front(seq2.at(here.y));
+    }
+  }
+
+  std::vector<std::pair<Seq, Seq>> out;
+  for (auto const &pair : seqs) {
+    out.push_back({Seq(pair.first.begin(), pair.first.end()),
+                   Seq(pair.second.begin(), pair.second.end())});
+  }
+
+  return out;
 }
 
 } // namespace alg
