@@ -39,11 +39,16 @@ int main(int, char const *[]) {
     }
   }
 
-  auto seqVector =
-      alg::findAlignmentsNW<std::string, char, int>(btrace, s1, s2);
-  ostrm << seqVector.at(0).first << std::endl;
-  ostrm << seqVector.at(0).second << std::endl;
-
-  ostrm << "\nbest score: " << scores(s1.size(), s2.size());
+  constexpr const auto branchLimit = 10;
+  auto seqVector = alg::findAlignmentsNW<std::string, char, int>(btrace, s1, s2,
+                                                                 branchLimit);
+  ostrm << "best score: " << scores(s1.size(), s2.size());
+  ostrm << "\npaths     : " << seqVector.size();
+  ostrm << " (" << branchLimit << " limit)";
+  ostrm << "\n" << std::endl;
+  for (auto const &seq : seqVector) {
+    ostrm << seq.first << std::endl;
+    ostrm << seq.second << "\n" << std::endl;
+  }
   return 0;
 }

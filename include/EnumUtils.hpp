@@ -3,24 +3,24 @@
 namespace enutl {
 
 template <class Elem, class U = std::underlying_type_t<Elem>>
-constexpr Elem operator|(const Elem lhs, const Elem rhs) {
+constexpr U operator|(const Elem lhs, const Elem rhs) {
   static_assert(std::is_enum<Elem>::value,
                 "Template parameter must be an enum type.");
-  return static_cast<Elem>(static_cast<U>(lhs) | static_cast<U>(rhs));
+  return static_cast<U>(static_cast<U>(lhs) | static_cast<U>(rhs));
 }
 
 template <class Elem, class U = std::underlying_type_t<Elem>>
-constexpr Elem operator&(const Elem lhs, const Elem rhs) {
+constexpr U operator&(const Elem lhs, const Elem rhs) {
   static_assert(std::is_enum<Elem>::value,
                 "Template parameter must be an enum type.");
-  return static_cast<Elem>(static_cast<U>(lhs) & static_cast<U>(rhs));
+  return static_cast<U>(static_cast<U>(lhs) & static_cast<U>(rhs));
 }
 
 template <class Elem, class U = std::underlying_type_t<Elem>>
-constexpr Elem operator^(const Elem lhs, const Elem rhs) {
+constexpr U operator^(const Elem lhs, const Elem rhs) {
   static_assert(std::is_enum<Elem>::value,
                 "Template parameter must be an enum type.");
-  return static_cast<Elem>(static_cast<U>(lhs) ^ static_cast<U>(rhs));
+  return static_cast<U>(static_cast<U>(lhs) ^ static_cast<U>(rhs));
 }
 
 template <class Elem, class U = std::underlying_type_t<Elem>>

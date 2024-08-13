@@ -84,57 +84,71 @@ void sequenceScoringNW(const Seq &seq1, const Seq &seq2, MutMatrix<Num> &scores,
 }
 
 template <class Seq, class Elem, class Num>
-std::vector<std::pair<Seq, Seq>> findAlignmentsNW(const MutMatrix<Num> &btrace,
-                                                  const Seq &seq1,
-                                                  const Seq &seq2) {
+std::vector<std::pair<Seq, Seq>>
+findAlignmentsNW(const MutMatrix<Num> &btrace, const Seq &seq1, const Seq &seq2,
+                 size_t branchLimit = 10) {
   static_assert(
       std::is_same<decltype(std::declval<Seq>().at(0)), Elem &>::value ||
           std::is_same<decltype(std::declval<Seq>().at(0)),
                        const Elem &>::value,
       "Container Seq must support 'at()' method returning Elem or const Elem "
       "reference");
-  constexpr const auto max_size_t = std::numeric_limits<size_t>::max();
+  // constexpr const auto max_size_t = std::numeric_limits<size_t>::max();
+  using elemDeque = std::deque<Elem>;
   struct Vec2 {
     size_t x;
     size_t y;
+    size_t branch;
+    char sym1;
+    char sym2;
   };
   std::stack<Vec2> stack;
-  stack.push({btrace.rowSize() - 1, btrace.colSize() - 1});
-  std::vector<std::pair<std::deque<Elem>, std::deque<Elem>>> seqs;
-  seqs.push_back({std::deque<Elem>{}, std::deque<Elem>{}});
+  std::vector<std::pair<elemDeque, elemDeque>> seqs;
+
+  seqs.push_back({elemDeque{}, elemDeque{}});
+  stack.push({btrace.rowSize(), btrace.colSize(), 0, '\0', '\0'});
 
   for (Vec2 here = stack.top(); !stack.empty();) {
     here = stack.top();
     stack.pop();
-    if (here.x == max_size_t) {
-      for (size_t j = 0; j <= here.y; ++j) {
-        seqs.back().first.push_front('-');
-        seqs.back().second.push_front(seq2.at(here.y - j));
-      }
-      break;
-    } else if (here.y == max_size_t) {
-      for (size_t i = 0; i <= here.x; ++i) {
-        seqs.back().first.push_front(seq1.at(here.x - i));
-        seqs.back().second.push_front('-');
-      }
-      break;
+    Num direction;
+
+    if (here.x != seq1.size() && here.y != seq2.size()) {
+      seqs.at(here.branch).first.push_front(here.sym1);
+      seqs.at(here.branch).second.push_front(here.sym2);
     }
-    auto direction = btrace(here.x, here.y);
-    if ((here.x == 0 && here.x == here.y)) {
-      seqs.back().first.push_front(seq1.at(here.x));
-      seqs.back().second.push_front(seq2.at(here.y));
-    } else if (direction & static_cast<int>(Dir8::WEST)) {
-      stack.push({here.x, here.y - 1});
-      seqs.back().first.push_front('-');
-      seqs.back().second.push_front(seq2.at(here.y));
-    } else if (direction & static_cast<int>(Dir8::NORTH)) {
-      stack.push({here.x - 1, here.y});
-      seqs.back().first.push_front(seq1.at(here.x));
-      seqs.back().second.push_front('-');
-    } else if (direction & static_cast<int>(Dir8::NORTH_WEST)) {
-      stack.push({here.x - 1, here.y - 1});
-      seqs.back().first.push_front(seq1.at(here.x));
-      seqs.back().second.push_front(seq2.at(here.y));
+    if (here.x != 0 && here.y != 0) {
+      direction = btrace(here.x - 1, here.y - 1);
+    } else if (here.x != here.y) {
+      direction = static_cast<Num>(here.x == 0 ? Dir8::WEST : Dir8::NORTH);
+    } else {
+      // branch has terminated
+      continue;
+    }
+
+    bool branching = false;
+    for (auto const &dir : {Dir8::WEST, Dir8::NORTH, Dir8::NORTH_WEST}) {
+      using namespace enutl;
+      if (direction & static_cast<int>(dir)) {
+
+        if (branching && seqs.size() >= branchLimit) {
+          break;
+        }
+
+        char c1 = dir & Dir8::WEST ? '-' : seq1.at(here.x - 1);
+        char c2 = dir & Dir8::NORTH ? '-' : seq2.at(here.y - 1);
+        size_t xNext = here.x - (dir & Dir8::WEST ? 0 : 1);
+        size_t yNext = here.y - (dir & Dir8::NORTH ? 0 : 1);
+        size_t nextBranch = here.branch;
+        if (branching) {
+          auto prev1 = seqs.at(here.branch).first;
+          auto prev2 = seqs.at(here.branch).second;
+          seqs.push_back({elemDeque{prev1}, elemDeque{prev2}});
+          nextBranch = seqs.size() - 1;
+        }
+        stack.push({xNext, yNext, nextBranch, c1, c2});
+        branching = true;
+      }
     }
   }
 
