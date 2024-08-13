@@ -27,6 +27,17 @@ int main(int, char const *[]) {
   alg::sequenceScoringNW<std::string, char, int>(s1, s2, scores, btrace,
                                                  matchPen, gapPen);
 
+  size_t vertices = 0, edges = 0;
+  vertices = s1.length() * s2.length();
+  for (auto const &bt : btrace) {
+    using namespace alg;
+    for (auto const &dir : {Dir8::WEST, Dir8::NORTH, Dir8::NORTH_WEST}) {
+      if (bt & static_cast<int>(dir)) {
+        ++edges;
+      }
+    }
+  }
+
   if (scores.size() < 600) {
     for (auto const &mtx : {scores, btrace}) {
       for (size_t i = 0, sz = mtx.rowSize(); i < sz; ++i) {
@@ -42,8 +53,9 @@ int main(int, char const *[]) {
   constexpr const auto branchLimit = 10;
   auto seqVector = alg::findAlignmentsNW<std::string, char, int>(btrace, s1, s2,
                                                                  branchLimit);
-  ostrm << "best score: " << scores(s1.size(), s2.size());
-  ostrm << "\npaths     : " << seqVector.size();
+  ostrm << "best score: " << scores(s1.size(), s2.size()) << "\n";
+  ostrm << "back trace has " << vertices << " nodes and " << edges << " edges\n";
+  ostrm << "paths     : " << seqVector.size();
   ostrm << " (" << branchLimit << " limit)";
   ostrm << "\n" << std::endl;
   for (auto const &seq : seqVector) {
