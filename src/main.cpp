@@ -56,7 +56,11 @@ int main(int, char const *[]) {
   ostrm << "best score: " << scores(s1.size(), s2.size()) << "\n";
   ostrm << "back trace has " << vertices << " nodes and " << edges << " edges\n";
   ostrm << "paths     : " << seqVector.size();
-  ostrm << " (" << branchLimit << " limit)";
+  if (seqVector.size() == branchLimit) {
+    ostrm << " (limited)";
+  } else {
+    ostrm << " (all)";
+  }
   ostrm << "\n" << std::endl;
   for (auto const &seq : seqVector) {
     ostrm << seq.first << std::endl;
